@@ -1,6 +1,7 @@
 package cc.mrbird.system.controller;
 
 import cc.mrbird.common.annotation.Log;
+import cc.mrbird.common.config.FebsProperies;
 import cc.mrbird.common.controller.BaseController;
 import cc.mrbird.common.domain.ResponseBo;
 import cc.mrbird.common.util.MD5Utils;
@@ -27,6 +28,9 @@ import javax.servlet.http.HttpSession;
 public class LoginController extends BaseController {
 
     @Autowired
+    private FebsProperies febsProperies;
+
+    @Autowired
     private UserService userService;
 
     @GetMapping("/login")
@@ -46,6 +50,7 @@ public class LoginController extends BaseController {
         if (!code.toLowerCase().equals(sessionCode)) {
             return ResponseBo.warn("验证码错误！");
         }
+        // 密码 MD5 加密
         password = MD5Utils.encrypt(username.toLowerCase(), password);
         UsernamePasswordToken token = new UsernamePasswordToken(username, password, rememberMe);
         try {
@@ -67,7 +72,10 @@ public class LoginController extends BaseController {
             response.setDateHeader("Expires", 0);
             response.setContentType("image/gif");
 
-            Captcha captcha = new GifCaptcha(146, 33, 4);
+            Captcha captcha = new GifCaptcha(
+                    febsProperies.getValidateCode().getWidth(),
+                    febsProperies.getValidateCode().getHeight(),
+                    febsProperies.getValidateCode().getLength());
             captcha.out(response.getOutputStream());
             HttpSession session = request.getSession(true);
             session.removeAttribute("_code");
@@ -90,6 +98,7 @@ public class LoginController extends BaseController {
     @Log("访问系统")
     @RequestMapping("/index")
     public String index(Model model) {
+        // 登录成后，即可通过 Subject 获取登录的用户信息
         User user = super.getCurrentUser();
         model.addAttribute("user", user);
         return "index";
