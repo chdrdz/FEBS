@@ -1,20 +1,23 @@
 package cc.mrbird.common.config;
 
-import java.text.SimpleDateFormat;
-import java.util.HashMap;
-import java.util.Map;
-
+import cc.mrbird.common.xss.XssFilter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import cc.mrbird.common.xss.XssFilter;
+import java.text.SimpleDateFormat;
+import java.util.HashMap;
+import java.util.Map;
 
 @Configuration
+@SuppressWarnings("unchecked")
 public class WebConfig {
-	
+
+	@Autowired
+	private FebsProperies febsProperies;
+
 	/**
 	 * XssFilter Bean
 	 */
@@ -31,11 +34,12 @@ public class WebConfig {
 		filterRegistrationBean.setInitParameters(initParameters);
 		return filterRegistrationBean;
 	}
-	
+
 	@Bean
 	public ObjectMapper getObjectMapper() {
 		ObjectMapper mapper = new ObjectMapper();
-		mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
+		mapper.setDateFormat(new SimpleDateFormat(febsProperies.getTimeFormat()));
 		return mapper;
 	}
+
 }
